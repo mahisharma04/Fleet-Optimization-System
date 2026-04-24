@@ -3,7 +3,7 @@ import { Activity, ShieldAlert, Truck, Timer, MapPin, RefreshCw, MousePointer2 }
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const Dashboard = () => {
-  const { ambulances, emergencies, createEmergency, resetSystem, dispatchMode, toggleDispatchMode, loading } = useFleetStore();
+  const { ambulances, emergencies, createEmergency, resetSystem, dispatchMode, toggleDispatchMode, loading, metrics } = useFleetStore();
 
   const handleRandomEmergency = () => {
     const lat = 18.51957 + (Math.random() - 0.5) * 0.05;
@@ -14,8 +14,8 @@ const Dashboard = () => {
   const stats = [
     { label: 'Active Calls', value: emergencies.length, icon: ShieldAlert, color: 'text-red-500' },
     { label: 'Fleet Size', value: ambulances.length, icon: Truck, color: 'text-blue-500' },
-    { label: 'Avg ETA', value: '8.4m', icon: Timer, color: 'text-yellow-500' },
-    { label: 'Coverage', value: '94%', icon: Activity, color: 'text-green-500' },
+    { label: 'Avg ETA', value: metrics.avg_eta, icon: Timer, color: 'text-yellow-500' },
+    { label: 'Coverage', value: metrics.coverage, icon: Activity, color: 'text-green-500' },
   ];
 
   const dummyChartData = [

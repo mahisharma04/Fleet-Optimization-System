@@ -1,11 +1,12 @@
 import { create } from 'zustand';
-import { Ambulance, Prediction, EmergencyRequest, RouteData } from '../types';
+import { Ambulance, Prediction, EmergencyRequest, RouteData, SystemMetrics } from '../types';
 import axios from 'axios';
 
 interface FleetState {
   ambulances: Ambulance[];
   predictions: Prediction[];
   emergencies: EmergencyRequest[];
+  metrics: SystemMetrics;
   activeRoute: RouteData | null;
   dispatchMode: boolean;
   loading: boolean;
@@ -14,6 +15,7 @@ interface FleetState {
   fetchAmbulances: () => Promise<void>;
   fetchPredictions: () => Promise<void>;
   fetchEmergencies: () => Promise<void>;
+  fetchMetrics: () => Promise<void>;
   createEmergency: (lat: number, lon: number, priority: string) => Promise<void>;
   resetSystem: () => Promise<void>;
   toggleDispatchMode: () => void;
@@ -27,6 +29,7 @@ export const useFleetStore = create<FleetState>((set, get) => ({
   ambulances: [],
   predictions: [],
   emergencies: [],
+  metrics: { avg_eta: '0.0m', coverage: '0%' },
   activeRoute: null,
   dispatchMode: false,
   loading: false,
@@ -56,6 +59,15 @@ export const useFleetStore = create<FleetState>((set, get) => ({
       set({ emergencies: res.data });
     } catch (err) {
       set({ error: 'Failed to fetch emergencies' });
+    }
+  },
+
+  fetchMetrics: async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/metrics`);
+      set({ metrics: res.data });
+    } catch (err) {
+      console.error('Failed to fetch metrics', err);
     }
   },
 
@@ -106,7 +118,8 @@ export const useFleetStore = create<FleetState>((set, get) => ({
       await Promise.all([
         get().fetchAmbulances(),
         get().fetchPredictions(),
-        get().fetchEmergencies()
+        get().fetchEmergencies(),
+        get().fetchMetrics()
       ]);
     } catch (err) {
       set({ error: 'Failed to reset system', loading: false });

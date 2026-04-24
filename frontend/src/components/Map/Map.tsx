@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, Fragment } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { useFleetStore } from '../../store/useFleetStore';
@@ -18,16 +18,18 @@ const MapEvents = () => {
 };
 
 const MapComponent = () => {
-  const { ambulances, predictions, activeRoute, fetchAmbulances, fetchPredictions, fetchEmergencies } = useFleetStore();
+  const { ambulances, predictions, activeRoute, fetchAmbulances, fetchPredictions, fetchEmergencies, fetchMetrics } = useFleetStore();
 
   useEffect(() => {
     fetchAmbulances();
     fetchPredictions();
     fetchEmergencies();
+    fetchMetrics();
     const interval = setInterval(() => {
       fetchAmbulances();
       fetchPredictions();
       fetchEmergencies();
+      fetchMetrics();
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -54,18 +56,40 @@ const MapComponent = () => {
 
       {/* Heatmap Layer */}
       {predictions.map((p) => (
-        <CircleMarker
-          key={p.cluster_id}
-          center={[p.lat, p.lon]}
-          radius={p.score * 8}
-          pathOptions={{
-            fillColor: '#ef4444',
-            fillOpacity: 0.2,
-            weight: 0,
-          }}
-        >
-          <Popup>Demand Score: {p.score.toFixed(2)}</Popup>
-        </CircleMarker>
+        <Fragment key={p.cluster_id}>
+          {/* Outer Glow */}
+          <CircleMarker
+            center={[p.lat, p.lon]}
+            radius={p.score * 12}
+            pathOptions={{
+              fillColor: '#ef4444',
+              fillOpacity: 0.15,
+              color: '#ef4444',
+              weight: 1,
+              opacity: 0.3,
+              className: 'high-alert-zone'
+            }}
+          />
+          {/* Inner Core */}
+          <CircleMarker
+            center={[p.lat, p.lon]}
+            radius={p.score * 6}
+            pathOptions={{
+              fillColor: '#ef4444',
+              fillOpacity: 0.5,
+              color: '#ffffff',
+              weight: 2,
+              opacity: 0.8,
+            }}
+          >
+            <Popup>
+              <div className="text-sm font-sans">
+                <p className="font-bold text-red-600">High Alert Zone</p>
+                <p>Demand Score: {p.score.toFixed(2)}</p>
+              </div>
+            </Popup>
+          </CircleMarker>
+        </Fragment>
       ))}
 
       {/* Active Route Overlay */}

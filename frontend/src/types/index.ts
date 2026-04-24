@@ -27,3 +27,8 @@ export interface RouteData {
   path_coords: [number, number][];
   eta: number;
 }
+
+export interface SystemMetrics {
+  avg_eta: string;
+  coverage: string;
+}
